@@ -7,6 +7,7 @@ from homeassistant.components import (
     group,
     fan,
     input_boolean,
+    input_number,
     media_player,
     light,
     switch,
@@ -535,6 +536,48 @@ class VolumeCapability(_RangeCapability):
                 ATTR_ENTITY_ID: self.state.entity_id
             }, blocking=True, context=data.context)
 
+@register_capability
+class InputNumberCapability(_RangeCapability):
+    """Set input_number functionality."""
+
+    instance = 'temperature'
+
+    @staticmethod
+    def supported(domain, features):
+        """Test if state is supported."""
+        return domain == input_number.DOMAIN
+
+    def parameters(self):
+        """Return parameters for a devices request."""
+        min_value = self.state.attributes.get(input_number.ATTR_MIN)
+        max_value = self.state.attributes.get(input_number.ATTR_MAX)
+        value_perсision = self.state.attributes.get(input_number.ATTR_STEP)
+        return {
+            'instance': self.instance,
+            'unit': 'unit.temperature.celsius',
+            'range': {
+                'min': min_value,
+                'max': max_value,
+                'precision': value_perсision
+            }
+        }
+
+    def get_value(self):
+        """Return the state value of this capability for this entity."""
+        value = self.state.attributes.get(input_number.ATTR_VALUE)
+        if value is None:
+            return 0
+        else:
+            return int(value)
+
+    async def set_state(self, data, state):
+        """Set device state."""
+        await self.hass.services.async_call(
+            input_number.DOMAIN,
+            input_number.SERVICE_SET_VALUE, {
+                ATTR_ENTITY_ID: self.state.entity_id,
+                input_number.ATTR_VALUE: state['value']
+            }, blocking=True, context=data.context)
 
 class _ColorSettingCapability(_Capability):
     """Base color setting functionality.
