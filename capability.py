@@ -667,7 +667,7 @@ class InputNumberCapability(_RangeCapability):
     instance = 'temperature'
 
     @staticmethod
-    def supported(domain, features):
+    def supported(domain, features, entity_config):
         """Test if state is supported."""
         return domain == input_number.DOMAIN
 
